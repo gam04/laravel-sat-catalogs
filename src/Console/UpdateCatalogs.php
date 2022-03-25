@@ -26,7 +26,8 @@ class UpdateCatalogs extends Command
      *
      * @var string
      */
-    protected $signature = 'catalogs:update {--path : the root path} ';
+    protected $signature = 'catalogs:update
+                        {--path : define root path to store the files}';
 
     /**
      * The console command description.
@@ -67,9 +68,9 @@ class UpdateCatalogs extends Command
         }
 
         // where's zip goes
-        $rootPath = $this->hasOption('path')
+        $rootPath = $this->option('path')
             ? $this->option('path')
-            : __DIR__ . '/../Resource';
+            :  __DIR__ . '/../Resource';
 
         $zipPath = build_path([$rootPath, 'catalogs.zip']);
         $databasePath = build_path([$rootPath, 'catalogs.sqlite3']);
