@@ -31,15 +31,15 @@
     "autoload": {
         "psr-4": {
             "Gam\\LaravelSatCatalogs\\": "src"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Gam\\LaravelSatCatalogs\\Tests\\": "tests"
         },
         "files": [
             "src/helpers.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Gam\\LaravelSatCatalogs\\Tests\\": "tests"
+        }
     },
     "scripts": {
         "dev:all": [
