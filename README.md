@@ -1,8 +1,10 @@
 # Gam/laravel-sat-catalogs
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/gam/laravel-sat-catalogs.svg?style=flat-square)](https://packagist.org/packages/gam/laravel-sat-catalogs)
 [![Total Downloads](https://img.shields.io/packagist/dt/gam/laravel-sat-catalogs.svg?style=flat-square)](https://packagist.org/packages/gam/laravel-sat-catalogs)
-![GitHub Actions](https://github.com/gam/laravel-sat-catalogs/actions/workflows/main.yml/badge.svg)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/gam04/laravel-sat-catalogs/build?style=flat-square)
+![GitHub](https://img.shields.io/github/license/gam04/laravel-sat-catalogs?style=flat-square)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/gam04/laravel-sat-catalogs?style=flat-square)
+![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/gam/laravel-sat-catalogs?style=flat-square)
 
 Simple package providing an Artisan command to update the SAT Catalogs.
 You can access them through the  `Catalog` Facade.
