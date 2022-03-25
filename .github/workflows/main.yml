@@ -1,45 +1,105 @@
-name: run-tests
-
+name: build
 on:
-    push:
-        branches: [master]
-    pull_request:
-        branches: [master]
+  pull_request:
+    branches: [ "master" ]
+  push:
+    branches: [ "master" ]
+  schedule:
+    - cron: '0 16 * * 0' # sunday 16:00
+
+# Actions
+# shivammathur/setup-php@v2 https://github.com/marketplace/actions/setup-php-action
 
 jobs:
-    test:
-        runs-on: ${{ matrix.os }}
-        strategy:
-            fail-fast: true
-            matrix:
-                os: [ubuntu-latest, windows-latest]
-                php: [7.4, 8.0]
-                laravel: [8.*]
-                stability: [prefer-lowest, prefer-stable]
-                include:
-                    - laravel: 8.*
-                      testbench: ^6.6
 
-        name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
+  phpcs:
+    name: Code style (phpcs)
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          coverage: none
+          tools: composer:v2, cs2pr, phpcs
+        env:
+          fail-fast: true
+      - name: Code style (phpcs)
+        run: mkdir build/ && phpcs -q --report=checkstyle | cs2pr
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v2
+  php-cs-fixer:
+    name: Code style (php-cs-fixer)
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          coverage: none
+          tools: composer:v2, cs2pr, php-cs-fixer
+        env:
+          fail-fast: true
+      - name: Code style (php-cs-fixer)
+        run: mkdir build/  && php-cs-fixer fix --dry-run --format=checkstyle | cs2pr
 
-            - name: Setup PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: ${{ matrix.php }}
-                  extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
-                  coverage: none
-
-            - name: Setup problem matchers
-              run: |
-                  echo "::add-matcher::${{ runner.tool_cache }}/php.json"
-                  echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
-            - name: Install dependencies
-              run: |
-                  composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
-                  composer update --${{ matrix.stability }} --prefer-dist --no-interaction
-            - name: Execute tests
-              run: vendor/bin/phpunit
+  tests:
+    name: PHP ${{ matrix.php-versions }} on ${{ matrix.operating-systems }}
+    runs-on: ${{ matrix.operating-systems }}
+    strategy:
+      matrix:
+        operating-systems: [ "ubuntu-latest" ]
+        php-versions: [ '7.4', '8.0' ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup PHP on Linux
+        if: matrix.operating-systems == 'ubuntu-latest'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: sqlite3
+          coverage: none
+          tools: composer:v2
+        env:
+          fail-fast: true
+      # - name: Setup PHP on Windows
+      #   if: matrix.operating-systems == 'windows-latest'
+      #   uses: shivammathur/setup-php@v2
+      #   with:
+      #     php-version: ${{ matrix.php-versions }}
+      #     extensions: sqlite3, fileinfo
+      #     coverage: none
+      #     tools: composer:v2, sqlite3
+      #   env:
+      #     fail-fast: true
+      # only for local testing in nektos
+      - name: Update APT on nektos/act
+        if: matrix.operating-systems == 'ubuntu-latest' && github.actor == 'nektos/act'
+        run: sudo apt-get update -y -qq
+      # only for local testing in nektos
+      - name: sudo Install sqlite3 on linux
+        if: matrix.operating-systems == 'ubuntu-latest' && github.actor == 'nektos/act'
+        run: sudo apt-get install -y -qq sqlite3
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+      - name: Install dependencies
+      - run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+      - name: Tests (phpunit) on Linux
+        if: matrix.operating-systems == 'ubuntu-latest'
+        run: vendor/bin/phpunit --testdox --verbose
+      # - name: Tests (phpunit) on Windows
+      #   if: matrix.operating-systems == 'windows-latest'
+      #   run: vendor/bin/phpunit --testdox --verbose
