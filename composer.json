@@ -38,7 +38,7 @@
             "Gam\\LaravelSatCatalogs\\Tests\\": "tests"
         },
         "files": [
-            "src/Helper/functions.php"
+            "src/helpers.php"
         ]
     },
     "scripts": {
