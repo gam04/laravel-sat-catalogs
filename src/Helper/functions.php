@@ -27,7 +27,6 @@ if (! function_exists('rmdir_recursive')) {
     }
 }
 
-
 if (! function_exists('config_path')) {
     /**
      * Get the configuration path.
