@@ -1,0 +1,73 @@
+{
+    "name": "gam/laravel-sat-catalogs",
+    "description": "Provides a artisan command to automatically update SAT catalogs. Use a DB facade to access them.",
+    "keywords": [
+        "gam",
+        "laravel-sat-catalogs",
+        "cfdi",
+        "sat"
+    ],
+    "homepage": "https://github.com/gam/laravel-sat-catalogs",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Gamboa Aguirre",
+            "email": "antgam95@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "ext-zip": "*",
+        "guzzlehttp/guzzle": "^7.4",
+        "illuminate/support": "^8.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.8",
+        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Gam\\LaravelSatCatalogs\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Gam\\LaravelSatCatalogs\\Tests\\": "tests"
+        },
+        "files": [
+            "src/Helper/functions.php"
+        ]
+    },
+    "scripts": {
+        "dev:all": [
+            "@dev:code-style",
+            "@dev:test"
+        ],
+        "dev:test": "vendor/bin/phpunit",
+        "dev:test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "dev:code-style": "vendor/bin/php-cs-fixer fix --ansi --dry-run --diff",
+        "dev:fix-style": "vendor/bin/php-cs-fixer fix --verbose"
+    },
+    "scripts-descriptions": {
+        "dev:all": "Perform all the checks at once: code-style, static code analysis, unit tests and security.",
+        "dev:code-style": "Check the code style.",
+        "dev:fix-style": "Fix the code style.",
+        "dev:test": "Run all unit tests."
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CatalogsServiceProvider"
+            ],
+            "aliases": {
+                "SatCatalogs": "Gam\\LaravelSatCatalogs\\Facade\\Catalog"
+            }
+        }
+    }
+}
