@@ -27,7 +27,7 @@ class UpdateCatalogs extends Command
      * @var string
      */
     protected $signature = 'catalogs:update
-                        {--path : define root path to store the files}';
+                        {--path=: define root path to store the files}';
 
     /**
      * The console command description.
