@@ -19,8 +19,14 @@ composer require gam/laravel-sat-catalogs
 
 ## Usage
 
+0. For lumen applications, register the provider in `app/bootstrap.php` file,
+   add the following line:
+   ```
+   $app->register(\Gam\LaravelSatCatalogs\CatalogsServiceProvider::class);
+   ```
+
 1. Set a sqlite3 connection for the driver `catalogs`. You can change the driver name in
-   `catalogs.php`.  
+   `config/catalogs.php`.  
    Example:
    ```php
    <?php
@@ -36,7 +42,7 @@ composer require gam/laravel-sat-catalogs
 
 2. Update the catalogs database
    ```shell
-   php artisan catalogs:update
+   php artisan catalogs:update --path={$MY_PATH}
    ```
 3. Access to the catalogs using `Catalog` Facade: 
    ```php 
