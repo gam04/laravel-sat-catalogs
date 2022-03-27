@@ -19,7 +19,7 @@ composer require gam/laravel-sat-catalogs
 
 ## Usage
 
-0. For lumen applications, register the provider in `app/bootstrap.php` file,
+0. For lumen applications, register the provider in `bootstrap/app.php` file,
    add the following line:
    ```
    $app->register(\Gam\LaravelSatCatalogs\CatalogsServiceProvider::class);
