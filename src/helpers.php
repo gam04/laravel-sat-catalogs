@@ -1,7 +1,7 @@
 <?php
 
 if (! function_exists('build_path')) {
-    function build_path($segments = [], $leading = true, $url = false): string
+    function build_path($segments = [], $leading = false, $url = false): string
     {
         if ($url) {
             $slash = '/';
