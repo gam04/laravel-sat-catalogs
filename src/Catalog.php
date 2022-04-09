@@ -2,11 +2,17 @@
 
 namespace Gam\LaravelSatCatalogs;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class Catalog
 {
     private const DEFAULT_DRIVER = 'catalogs';
+
+    /**
+     * @var Collection|null table name cache
+     */
+    private ?Collection $cache;
 
     /**
      * @var string The database connection driver
@@ -28,11 +34,14 @@ class Catalog
      */
     public function availables(): \Illuminate\Support\Collection
     {
-        return DB::connection($this->driver)
-            ->table('sqlite_master')
-            ->where('type', 'table')
-            ->get()
-            ->pluck('name');
+        if (empty($this->cache)) {
+            $this->cache = DB::connection($this->driver)
+                ->table('sqlite_master')
+                ->where('type', 'table')
+                ->get()
+                ->pluck('name');
+        }
+        return $this->cache;
     }
 
     public function hasId(string $catalog): bool
@@ -44,27 +53,22 @@ class Catalog
 
     /**
      * Get the text of the given catalog.
-     * If 'id' column doesnt exists, the method will try to guess the search column
      * @param string $catalog
      * @param string $id
+     * @param string $column
      * @return string
      */
-    public function textOf(string $catalog, string $id): string
+    public function textOf(string $catalog, string $id, string $column = 'id'): string
     {
         if (! $this->exists($catalog)) {
             return '';
         }
 
-        if ($this->hasId($catalog)) {
-            return $this->of($catalog)
-                ->find($id)
-                ->texto;
-        }
+        $model = $this->of($catalog)
+            ->where($column, $id)
+            ->first();
 
-        return $this->of($catalog)
-            ->where($this->guessSearchColumn($catalog), $id)
-            ->first()
-            ->texto;
+        return is_null($model)? '' : $model->texto;
     }
 
     /**
@@ -91,6 +95,21 @@ class Catalog
     public function unprepared($sql): bool
     {
         return DB::connection($this->driver)->unprepared($sql);
+    }
+
+    public function clearCatalogsCache(): void
+    {
+        $this->cache = null;
+    }
+
+    /**
+     * @internal
+     * @return Collection|null
+     */
+    public function getCache(): ?Collection
+    {
+        // amm to test?
+        return $this->cache;
     }
 
     /**

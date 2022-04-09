@@ -52,16 +52,20 @@ class CatalogTest extends \Gam\LaravelSatCatalogs\Tests\TestCase
     public function textOfWithId(): void
     {
         self::assertEquals('Enero', $this->catalog->textOf('cfdi_40_meses', '01'));
+        self::assertEquals(
+            'Aguascalientes',
+            $this->catalog->textOf('cfdi_40_estados', 'AGU', 'estado')
+        );
     }
 
     /**
-     * @test Retrieve text column guessing the search column
+     * @test
      */
-    public function textOfGuessingSearchColumn(): void
+    public function clearCache(): void
     {
-        self::assertEquals(
-            'Aguascalientes',
-            $this->catalog->textOf('cfdi_40_estados', 'AGU')
-        );
+        $this->catalog->availables();
+        self::assertNotNull($this->catalog->getCache());
+        $this->catalog->clearCatalogsCache();
+        self::assertNull($this->catalog->getCache());
     }
 }

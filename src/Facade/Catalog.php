@@ -10,7 +10,7 @@ namespace Gam\LaravelSatCatalogs\Facade;
  * @method static bool unprepared(string $sql)
  * @method static \Illuminate\Database\Query\Builder of(string $catalog)
  * @method static bool hasId(string $catalog)
- * @method static string textOf(string $catalog, string $id)
+ * @method static string textOf(string $catalog, string $id, string $column)
  */
 class Catalog extends \Illuminate\Support\Facades\Facade
 {
