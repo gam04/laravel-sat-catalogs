@@ -56,19 +56,20 @@ class Catalog
      * @param string $catalog
      * @param string $id
      * @param string $column
+     * @param string $default
      * @return string
      */
-    public function textOf(string $catalog, string $id, string $column = 'id'): string
+    public function textOf(string $catalog, string $id, string $column = 'id', string $default = ''): string
     {
         if (! $this->exists($catalog)) {
-            return '';
+            return $default;
         }
 
         $model = $this->of($catalog)
             ->where($column, $id)
             ->first();
 
-        return is_null($model)? '' : $model->texto;
+        return is_null($model)? $default : $model->texto;
     }
 
     /**

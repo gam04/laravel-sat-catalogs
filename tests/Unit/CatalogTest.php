@@ -56,6 +56,10 @@ class CatalogTest extends \Gam\LaravelSatCatalogs\Tests\TestCase
             'Aguascalientes',
             $this->catalog->textOf('cfdi_40_estados', 'AGU', 'estado')
         );
+        self::assertEquals(
+            'N/A',
+            $this->catalog->textOf('cfdi_40_estados', 'NO_EXISTE', 'estado', 'N/A')
+        );
     }
 
     /**
