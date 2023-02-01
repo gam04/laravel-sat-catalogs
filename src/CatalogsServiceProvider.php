@@ -14,7 +14,7 @@ class CatalogsServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/catalogs.php' => config_path('catalogs.php'),
+                build_path([__DIR__, '..', 'config', 'catalogs.php']) => config_path('catalogs.php'),
             ], 'config');
 
             // Registering package commands.
@@ -30,7 +30,7 @@ class CatalogsServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__ . '/../config/catalogs.php', 'catalogs');
+        $this->mergeConfigFrom(build_path([__DIR__, '..', 'config', 'catalogs.php']), 'catalogs');
 
         // Register the main class to use with the facade
         $this->app->singleton('catalog', function () {

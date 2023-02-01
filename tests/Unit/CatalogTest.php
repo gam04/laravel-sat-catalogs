@@ -17,7 +17,7 @@ class CatalogTest extends \Gam\LaravelSatCatalogs\Tests\TestCase
         $this->catalog = new Catalog();
         // create the database if does not exist
         if (! file_exists(self::DB_PATH)) {
-            $this->artisan('catalogs:update', ['--path' => __DIR__ . '/../_files'])
+            $this->artisan('catalogs:update', ['--path' => build_path([__DIR__ , '..', '_files'])])
                 ->execute();
         }
     }

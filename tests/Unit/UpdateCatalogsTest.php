@@ -11,7 +11,7 @@ class UpdateCatalogsTest extends TestCase
      */
     public function updateCatalogs(): void
     {
-        $this->artisan('catalogs:update', ['--path' => __DIR__ . '/../_files'])
+        $this->artisan('catalogs:update', ['--path' => build_path([__DIR__ , '..', '_files'])])
             ->assertSuccessful();
 
         $this->assertFileExists(self::DB_PATH);

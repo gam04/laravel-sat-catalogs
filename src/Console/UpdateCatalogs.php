@@ -70,7 +70,7 @@ class UpdateCatalogs extends Command
         // where's zip goes
         $rootPath = $this->option('path')
             ? $this->option('path')
-            :  __DIR__ . '/../Resource';
+            : build_path([__DIR__, '..', 'Resource']);
 
         $zipPath = build_path([$rootPath, 'catalogs.zip']);
         $databasePath = build_path([$rootPath, 'catalogs.sqlite3']);
