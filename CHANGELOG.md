@@ -11,3 +11,8 @@ All notable changes to `laravel-sat-catalogs` will be documented in this file
 
 - Catalogs table name cache
 - improve `textOf` method.
+
+
+## 1.0.2 - 2023-01-31
+
+- Remove support for `PHP <= 8.0`
