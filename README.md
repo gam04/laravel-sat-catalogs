@@ -1,7 +1,8 @@
 # Gam/laravel-sat-catalogs
 
+[![Source Code](https://img.shields.io/badge/source-phpcfdi/resources--sat--catalogs-blue?logo=github&style=flat-square)](https://github.com/phpcfdi/resources-sat-catalogs)
 [![Total Downloads](https://img.shields.io/packagist/dt/gam/laravel-sat-catalogs.svg?style=flat-square)](https://packagist.org/packages/gam/laravel-sat-catalogs)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/gam04/laravel-sat-catalogs/build?style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/gam04/laravel-sat-catalogs/main.yml?style=flat-square)
 ![GitHub](https://img.shields.io/github/license/gam04/laravel-sat-catalogs?style=flat-square)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/gam04/laravel-sat-catalogs?style=flat-square)
 ![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/gam/laravel-sat-catalogs?style=flat-square)
@@ -82,6 +83,7 @@ If you discover any security related issues, please email antgam95@gmail.com ins
 ## Credits
 
 -   [Gamboa Aguirre](https://github.com/gam04)
+-   [PhpCfdi](https://github.com/phpcfdi/resources-sat-catalogs)
 -   [All Contributors](../../contributors)
 
 ## License
