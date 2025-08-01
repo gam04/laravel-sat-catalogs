@@ -2,6 +2,7 @@
 
 namespace Gam\LaravelSatCatalogs;
 
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -12,12 +13,12 @@ class Catalog
     /**
      * @var Collection|null table name cache
      */
-    private ?Collection $cache;
+    private ?Collection $cache = null;
 
     /**
      * @var string The database connection driver
      */
-    private string $driver;
+    private readonly string $driver;
 
     public function __construct()
     {
@@ -32,15 +33,16 @@ class Catalog
     /**
      * Return the table names in sqlite db
      */
-    public function availables(): \Illuminate\Support\Collection
+    public function availables(): Collection
     {
-        if (empty($this->cache)) {
+        if (! isset($this->cache) || ! $this->cache instanceof Collection) {
             $this->cache = DB::connection($this->driver)
                 ->table('sqlite_master')
                 ->where('type', 'table')
                 ->get()
                 ->pluck('name');
         }
+
         return $this->cache;
     }
 
@@ -53,11 +55,6 @@ class Catalog
 
     /**
      * Get the text of the given catalog.
-     * @param string $catalog
-     * @param string $id
-     * @param string $column
-     * @param string $default
-     * @return string
      */
     public function textOf(string $catalog, string $id, string $column = 'id', string $default = ''): string
     {
@@ -91,7 +88,6 @@ class Catalog
     /**
      * Execute a raw sql query
      * @param $sql
-     * @return bool
      */
     public function unprepared($sql): bool
     {
@@ -105,7 +101,6 @@ class Catalog
 
     /**
      * @internal
-     * @return Collection|null
      */
     public function getCache(): ?Collection
     {
@@ -116,24 +111,9 @@ class Catalog
     /**
      * Return a QueryBuilder instance to execute sql queries
      * @param $catalog
-     * @return \Illuminate\Database\Query\Builder
      */
-    public function of($catalog): \Illuminate\Database\Query\Builder
+    public function of($catalog): Builder
     {
         return DB::connection($this->driver)->table($catalog);
-    }
-
-    private function guessSearchColumn(string $catalog): string
-    {
-        $parts = explode('_', $catalog);
-        $singleName = end($parts);
-        $transform = [
-            'colonias' => 'colonia',
-            'estados' => 'estado',
-            'municipios' => 'municipio',
-            'localidades' => 'localidad',
-        ];
-
-        return $transform[$singleName] ?? $singleName;
     }
 }

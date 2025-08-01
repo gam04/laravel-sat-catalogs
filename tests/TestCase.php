@@ -9,7 +9,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
 {
     protected const DB_PATH = __DIR__ . '/_files/catalogs.sqlite3';
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         Config::set([
@@ -30,7 +30,11 @@ class TestCase extends \Orchestra\Testbench\TestCase
         ]);
     }
 
-    protected function getPackageProviders($app)
+    /**
+     * @param $app
+     * @return class-string[]
+     */
+    protected function getPackageProviders($app): array
     {
         return [
             CatalogsServiceProvider::class,

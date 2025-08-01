@@ -3,13 +3,13 @@
 namespace Gam\LaravelSatCatalogs\Tests\Unit;
 
 use Gam\LaravelSatCatalogs\Catalog;
+use Gam\LaravelSatCatalogs\Tests\TestCase;
+use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\Test;
 
-class CatalogTest extends \Gam\LaravelSatCatalogs\Tests\TestCase
+class CatalogTest extends TestCase
 {
-    /**
-     * @var Catalog
-     */
-    private $catalog;
+    private Catalog $catalog;
 
     public function setUp(): void
     {
@@ -22,54 +22,38 @@ class CatalogTest extends \Gam\LaravelSatCatalogs\Tests\TestCase
         }
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function exists(): void
     {
-        self::assertTrue($this->catalog->exists('cfdi_40_productos_servicios'));
+        $this->assertTrue($this->catalog->exists('cfdi_40_productos_servicios'));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function hasId(): void
     {
-        self::assertTrue($this->catalog->hasId('cfdi_40_productos_servicios'));
+        $this->assertTrue($this->catalog->hasId('cfdi_40_productos_servicios'));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function doesNotHaveId(): void
     {
-        self::assertFalse($this->catalog->hasId('cfdi_40_colonias'));
+        $this->assertFalse($this->catalog->hasId('cfdi_40_colonias'));
     }
 
-    /**
-     * @test Retrieve text column with given ID
-     */
+    #[Test]
     public function textOfWithId(): void
     {
-        self::assertEquals('Enero', $this->catalog->textOf('cfdi_40_meses', '01'));
-        self::assertEquals(
-            'Aguascalientes',
-            $this->catalog->textOf('cfdi_40_estados', 'AGU', 'estado')
-        );
-        self::assertEquals(
-            'N/A',
-            $this->catalog->textOf('cfdi_40_estados', 'NO_EXISTE', 'estado', 'N/A')
-        );
+        $this->assertEquals('Enero', $this->catalog->textOf('cfdi_40_meses', '01'));
+        $this->assertEquals('Aguascalientes', $this->catalog->textOf('cfdi_40_estados', 'AGU', 'estado'));
+        $this->assertEquals('N/A', $this->catalog->textOf('cfdi_40_estados', 'NO_EXISTE', 'estado', 'N/A'));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function clearCache(): void
     {
         $this->catalog->availables();
-        self::assertNotNull($this->catalog->getCache());
+        $this->assertInstanceOf(Collection::class, $this->catalog->getCache());
         $this->catalog->clearCatalogsCache();
-        self::assertNull($this->catalog->getCache());
+        $this->assertNotInstanceOf(Collection::class, $this->catalog->getCache());
     }
 }

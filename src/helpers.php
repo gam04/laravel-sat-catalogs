@@ -3,15 +3,13 @@
 if (! function_exists('build_path')) {
     function build_path($segments = [], $leading = false, $url = false): string
     {
-        if ($url) {
-            $slash = '/';
-        } else {
-            $slash = DIRECTORY_SEPARATOR;
-        }
+        $slash = $url ? '/' : DIRECTORY_SEPARATOR;
+
         $string = implode($slash, $segments);
         if ($leading) {
-            $string = $slash . $string;
+            return $slash . $string;
         }
+
         return $string;
     }
 }
@@ -23,6 +21,7 @@ if (! function_exists('rmdir_recursive')) {
         foreach ($files as $file) {
             (is_dir("$dir/$file")) ? rmdir_recursive("$dir/$file") : unlink("$dir/$file");
         }
+
         return rmdir($dir);
     }
 }
@@ -30,9 +29,6 @@ if (! function_exists('rmdir_recursive')) {
 if (! function_exists('config_path')) {
     /**
      * Get the configuration path.
-     *
-     * @param string $path
-     * @return string
      */
     function config_path(string $path = ''): string
     {

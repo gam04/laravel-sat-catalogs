@@ -33,8 +33,6 @@ class CatalogsServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(build_path([__DIR__, '..', 'config', 'catalogs.php']), 'catalogs');
 
         // Register the main class to use with the facade
-        $this->app->singleton('catalog', function () {
-            return new Catalog();
-        });
+        $this->app->singleton('catalog', fn (): Catalog => new Catalog());
     }
 }

@@ -16,10 +16,7 @@ class UpdateCatalogs extends Command
      */
     private const DEFAULT_ZIP_SOURCE = 'https://github.com/phpcfdi/resources-sat-catalogs/archive/master.zip';
 
-    /**
-     * @var string
-     */
-    private string $zipSource;
+    private readonly string $zipSource;
 
     /**
      * The name and signature of the console command.
@@ -49,8 +46,6 @@ class UpdateCatalogs extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
@@ -64,25 +59,23 @@ class UpdateCatalogs extends Command
                     $response->status()
                 )
             );
-            return 1;
+            return self::FAILURE;
         }
 
         // where's zip goes
-        $rootPath = $this->option('path')
-            ? $this->option('path')
-            : build_path([__DIR__, '..', 'Resource']);
+        $rootPath = $this->option('path') ?: build_path([__DIR__, '..', 'Resource']);
 
         $zipPath = build_path([$rootPath, 'catalogs.zip']);
         $databasePath = build_path([$rootPath, 'catalogs.sqlite3']);
 
         File::put($zipPath, $response->body());
         // Storage::put(build_path([$destinationPath, 'catalogs.zip']), $response->body());
-        $zip = new ZipArchive();
+        $zipArchive = new ZipArchive();
         //$opened = $zip->open(storage_path(build_path(['app', $destinationPath, 'catalogs.zip'])));
-        $opened = $zip->open($zipPath);
+        $opened = $zipArchive->open($zipPath);
         if (true !== $opened) {
-            $this->error("Unable to extract the sql files: {$zip->getStatusString()}");
-            return 1;
+            $this->error("Unable to extract the sql files: {$zipArchive->getStatusString()}");
+            return self::FAILURE;
         }
 
         // if a previous sqlite db exists, delete it & create a new one
@@ -94,11 +87,11 @@ class UpdateCatalogs extends Command
 
         // try to extract the files
         $this->info('Extracting sql files...');
-        $res = $zip->extractTo($rootPath);
+        $res = $zipArchive->extractTo($rootPath);
         if (false === $res) {
             $this->error('Unable to extract the files');
-            $zip->close();
-            return 1;
+            $zipArchive->close();
+            return self::FAILURE;
         }
 
         // read all schema files and run them
@@ -116,6 +109,7 @@ class UpdateCatalogs extends Command
         foreach ($catalogs as $catalog) {
             Catalog::unprepared(File::get($catalog));
         }
+
         $this->table(['Schemas', 'Data'], [
             [count($schemas), count($catalogs)],
         ]);
@@ -125,6 +119,6 @@ class UpdateCatalogs extends Command
         File::deleteDirectory(build_path([$rootPath, 'resources-sat-catalogs-master']));
         File::delete($zipPath);
 
-        return 0;
+        return self::SUCCESS;
     }
 }
