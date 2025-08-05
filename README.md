@@ -37,6 +37,7 @@ composer require gam/laravel-sat-catalogs
 
 2. Update the catalogs database
    ```shell
+   # Si no se especifica --PATH los recursos se descargan en `storage/app/catalogs`
    php artisan catalogs:update --path={$MY_PATH}
    ```
 3. Access to the catalogs using `Catalog` Facade: 

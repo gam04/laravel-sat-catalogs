@@ -4,7 +4,7 @@ namespace Gam\LaravelSatCatalogs\Console;
 
 use Gam\LaravelSatCatalogs\Facade\Catalog;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use ZipArchive;
@@ -49,76 +49,192 @@ class UpdateCatalogs extends Command
      */
     public function handle(): int
     {
-        $this->info('Downloading ' . $this->zipSource . '...');
-        $response = Http::get($this->zipSource);
-        if (! $response->successful()) {
-            $this->error(
-                sprintf(
-                    'Unable to download %s. Http Code: %s',
-                    $this->zipSource,
-                    $response->status()
-                )
-            );
+        $this->info('Starting catalog update process...');
+
+        try {
+            $this->validateConfig();
+        } catch (\UnexpectedValueException $e) {
+            $this->error($e->getMessage());
             return self::FAILURE;
         }
 
-        // where's zip goes
-        $rootPath = $this->option('path') ?: build_path([__DIR__, '..', 'Resource']);
+        $rootPath = $this->getRootPath();
 
         $zipPath = build_path([$rootPath, 'catalogs.zip']);
-        $databasePath = build_path([$rootPath, 'catalogs.sqlite3']);
 
-        File::put($zipPath, $response->body());
-        // Storage::put(build_path([$destinationPath, 'catalogs.zip']), $response->body());
-        $zipArchive = new ZipArchive();
-        //$opened = $zip->open(storage_path(build_path(['app', $destinationPath, 'catalogs.zip'])));
-        $opened = $zipArchive->open($zipPath);
-        if (true !== $opened) {
-            $this->error("Unable to extract the sql files: {$zipArchive->getStatusString()}");
+        if (! $this->downloadZip($zipPath)) {
             return self::FAILURE;
         }
 
-        // if a previous sqlite db exists, delete it & create a new one
-        if (File::exists($databasePath)) {
-            File::delete($databasePath);
+        $databasePath = $this->getCatalogsDriverPath();
+
+        if (! $this->prepareDatabaseFile($databasePath)) {
+            return self::FAILURE;
         }
 
-        File::put($databasePath, '');
+        $zipArchive = new ZipArchive();
+        if (! $this->openZipArchive($zipArchive, $zipPath)) {
+            return self::FAILURE;
+        }
 
-        // try to extract the files
-        $this->info('Extracting sql files...');
-        $res = $zipArchive->extractTo($rootPath);
-        if (false === $res) {
-            $this->error('Unable to extract the files');
+        if (! $this->extractZipFiles($zipArchive, $rootPath)) {
             $zipArchive->close();
             return self::FAILURE;
         }
 
-        // read all schema files and run them
-        $schemas = File::allFiles(build_path([$rootPath, 'resources-sat-catalogs-master', 'database', 'schemas']));
+        $zipArchive->close();
+
+        if (! $this->createSchemas($rootPath)) {
+            return self::FAILURE;
+        }
+
+        if (! $this->insertData($rootPath)) {
+            return self::FAILURE;
+        }
+
+        $this->showSummary($rootPath);
+
+        $this->cleanUp($rootPath, $zipPath);
+
+        $this->info('Catalog update completed successfully.');
+
+        return self::SUCCESS;
+    }
+
+    private function getRootPath(): string
+    {
+        return $this->option('path') ?: storage_path('app/catalogs');
+    }
+
+    private function downloadZip(string $zipPath): bool
+    {
+        $this->info('Downloading ' . $this->zipSource . '...');
+
+        $response = Http::get($this->zipSource);
+
+        if (! $response->successful()) {
+            $this->error(sprintf(
+                'Unable to download %s. HTTP Code: %s',
+                $this->zipSource,
+                $response->status()
+            ));
+            return false;
+        }
+
+        File::put($zipPath, $response->body());
+
+        return true;
+    }
+
+    private function getCatalogsDriverPath(): string
+    {
+        $catalogDriverName = Config::string('catalogs.driver');
+
+        return Config::string(
+            "database.connections.{$catalogDriverName}.database"
+        );
+    }
+
+    private function prepareDatabaseFile(string $databasePath): bool
+    {
+        if (File::exists($databasePath)) {
+            File::delete($databasePath);
+        }
+        // Create empty file
+        File::put($databasePath, '');
+
+        return File::exists($databasePath);
+    }
+
+    private function openZipArchive(ZipArchive $zipArchive, string $zipPath): bool
+    {
+        $opened = $zipArchive->open($zipPath);
+        if (true !== $opened) {
+            $this->error("Unable to open ZIP archive: {$zipArchive->getStatusString()}");
+            return false;
+        }
+        return true;
+    }
+
+    private function extractZipFiles(ZipArchive $zipArchive, string $destination): bool
+    {
+        $this->info('Extracting SQL files...');
+        $extracted = $zipArchive->extractTo($destination);
+        if (! $extracted) {
+            $this->error('Unable to extract the files.');
+            return false;
+        }
+        return true;
+    }
+
+    private function createSchemas(string $rootPath): bool
+    {
+        $schemasPath = build_path([
+            $rootPath,
+            'resources-sat-catalogs-master',
+            'database',
+            'schemas',
+        ]);
+
+        $schemas = File::allFiles($schemasPath);
+
+        if (empty($schemas)) {
+            $this->error('No schema files found.');
+            return false;
+        }
 
         $this->info('Creating schemas...');
         foreach ($schemas as $schema) {
             Catalog::unprepared(File::get($schema));
         }
 
-        // read all data file and run them
-        $catalogs = File::allFiles(build_path([$rootPath, 'resources-sat-catalogs-master', 'database', 'data']));
+        return true;
+    }
+
+    private function insertData(string $rootPath): bool
+    {
+        $dataPath = build_path([$rootPath, 'resources-sat-catalogs-master', 'database', 'data']);
+        $catalogs = File::allFiles($dataPath);
+
+        if (empty($catalogs)) {
+            $this->error('No catalog data files found.');
+            return false;
+        }
 
         $this->info('Inserting data...');
         foreach ($catalogs as $catalog) {
             Catalog::unprepared(File::get($catalog));
         }
 
+        return true;
+    }
+
+    private function showSummary(string $rootPath): void
+    {
+        $schemasPath = build_path([$rootPath, 'resources-sat-catalogs-master', 'database', 'schemas']);
+        $dataPath = build_path([$rootPath, 'resources-sat-catalogs-master', 'database', 'data']);
+        $schemasCount = count(File::allFiles($schemasPath));
+        $catalogsCount = count(File::allFiles($dataPath));
+
         $this->table(['Schemas', 'Data'], [
-            [count($schemas), count($catalogs)],
+            [$schemasCount, $catalogsCount],
         ]);
+    }
 
-        // clean
-        File::cleanDirectory(build_path([$rootPath, 'resources-sat-catalogs-master']));
-        File::deleteDirectory(build_path([$rootPath, 'resources-sat-catalogs-master']));
+    private function cleanUp(string $rootPath, string $zipPath): void
+    {
+        $tempDir = build_path([$rootPath, 'resources-sat-catalogs-master']);
+        File::cleanDirectory($tempDir);
+        File::deleteDirectory($tempDir);
         File::delete($zipPath);
+    }
 
-        return self::SUCCESS;
+    private function validateConfig(): void
+    {
+        $catalogDriverName = Config::string('catalogs.driver');
+
+        if (null === Config::get("database.connections.$catalogDriverName")) {
+            throw new \UnexpectedValueException('The driver path is not set.');
+        }
     }
 }
