@@ -63,7 +63,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "CatalogsServiceProvider"
+                "Gam\\LaravelSatCatalogs\\CatalogsServiceProvider"
             ],
             "aliases": {
                 "SatCatalogs": "Gam\\LaravelSatCatalogs\\Facade\\Catalog"

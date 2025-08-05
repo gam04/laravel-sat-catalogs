@@ -18,7 +18,7 @@ All notable changes to `laravel-sat-catalogs` will be documented in this file
 - Remove support for `PHP < 8.0`.
 - Normalize paths (directory separator)
 
-## 2.0.0 - 2025-08-01
+## 2.0.1 - 2025-08-01
 
 - Remove support for `PHP < 8.2`
 - Remove support for Lumen
